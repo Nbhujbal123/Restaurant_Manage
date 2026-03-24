@@ -13,6 +13,15 @@ const WelcomePage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState('login')
 
+  // Auto-open login modal if siteCode is present in URL
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const siteCodeFromUrl = urlParams.get('siteCode')
+    if (siteCodeFromUrl) {
+      setShowAuthModal(true)
+    }
+  }, [])
+
   const handleStart = () => {
     setShowAuthModal(true)
   }
