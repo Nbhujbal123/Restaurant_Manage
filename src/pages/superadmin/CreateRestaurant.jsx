@@ -114,10 +114,8 @@ const CreateRestaurant = () => {
       const siteCode = res.data.restaurant.siteCode;
 
       // Generate the customer-facing link with siteCode using FRONTEND_URL
-      // Use window.location.origin as fallback if FRONTEND_URL is not set
-      const baseUrl = FRONTEND_URL && FRONTEND_URL !== 'https://your-frontend.vercel.app'
-        ? FRONTEND_URL
-        : window.location.origin;
+      // Always use FRONTEND_URL from environment (VITE_FRONTEND_URL)
+      const baseUrl = FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app';
       
       const restaurantLink = `${baseUrl}?siteCode=${siteCode}`;
       
