@@ -8,15 +8,12 @@ import {
   FaSearch,
   FaArrowLeft,
   FaBan,
-  FaExternalLinkAlt,
   FaCheck
 } from "react-icons/fa";
 import { toast } from "../../components/Toast";
-
-import { API_BASE_URL, FRONTEND_URL } from "../../config/api";
+import { API_BASE_URL } from "../../config/api";
 
 const ViewRestaurants = () => {
-
   const navigate = useNavigate();
 
   const [restaurants, setRestaurants] = useState([]);
@@ -26,417 +23,230 @@ const ViewRestaurants = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userStr = localStorage.getItem("user");
-    
-    if (!token) {
-      navigate("/superadmin/login");
-      return;
-    }
-    
-    // Verify user has superadmin role
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (user.role !== "superadmin" && user.email !== "superadmin@restom.com") {
-          navigate("/superadmin/login");
-          return;
-        }
-      } catch (e) {
-        console.error("Error parsing user data:", e);
-      }
-    }
-    
+    if (!token) return navigate("/superadmin/login");
     fetchRestaurants();
-  }, [navigate]);
+  }, []);
 
   const fetchRestaurants = async () => {
-    setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      
-      if (!token) {
-        alert("Please login first");
-        navigate("/superadmin/login");
-        return;
-      }
-
-      console.log("Fetching restaurants...");
-      console.log("API URL:", `${API_BASE_URL}/superadmin/restaurants`);
-      console.log("Token:", token ? "Present" : "Missing");
 
       const res = await axios.get(
         `${API_BASE_URL}/superadmin/restaurants`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          timeout: 10000
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
 
-      console.log("Restaurants response:", res.data);
-      console.log("Response status:", res.status);
-
       setRestaurants(res.data);
-
     } catch (err) {
-      console.error("Fetch restaurants error:", err);
-      console.error("Error details:", {
-        message: err.message,
-        code: err.code,
-        response: err.response?.data,
-        status: err.response?.status
-      });
-      
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          const errorMessage = err.response?.data?.message || "Failed to fetch restaurants";
-          console.error("Server error:", errorMessage);
-          alert(`${errorMessage} (Status: ${err.response.status})`);
-        } else if (err.request) {
-          console.error("No response received:", err.request);
-          alert("Cannot connect to server. Please check your internet connection.");
-        } else {
-          console.error("Request setup error:", err.message);
-          alert(`Error: ${err.message}`);
-        }
-      } else {
-        console.error("Non-Axios error:", err);
-        alert(`Error: ${err.message}`);
-      }
+      toast.error("Failed to fetch restaurants");
     } finally {
       setLoading(false);
     }
   };
 
   const toggleRestaurantStatus = async (siteCode, currentStatus) => {
-
     try {
-
       const token = localStorage.getItem("token");
-
-      if (!token) {
-        toast.error("You are not logged in. Please login again.")
-        navigate("/superadmin/login")
-        return
-      }
-
       const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
-      const res = await axios.put(
-        `${API_BASE_URL}/superadmin/restaurants/${siteCode.toUpperCase()}/status`,
+      await axios.put(
+        `${API_BASE_URL}/superadmin/restaurants/${siteCode}/status`,
         { status: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Refresh the restaurant list
       fetchRestaurants();
-
-      // Show success message
-      if (newStatus === "INACTIVE") {
-        toast.success("Restaurant has been deactivated successfully.")
-      } else {
-        toast.success("Restaurant has been activated successfully.")
-      }
-
-    } catch (err) {
-      console.error("Error toggling restaurant status:", err)
-      const errorMessage = err.response?.data?.message || "Failed to update restaurant status"
-      toast.error(errorMessage)
-    }
-
-  };
-
-  const copyToClipboard = async (text, fieldName) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(fieldName);
-      setTimeout(() => setCopiedField(null), 2000);
-      toast.success("Link copied to clipboard!");
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopiedField(fieldName);
-      setTimeout(() => setCopiedField(null), 2000);
-      toast.success("Link copied to clipboard!");
+      toast.success(`Restaurant ${newStatus.toLowerCase()}`);
+    } catch {
+      toast.error("Failed to update status");
     }
   };
 
-  const filteredRestaurants = restaurants.filter((r) =>
+  const copyToClipboard = async (text, key) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedField(key);
+    setTimeout(() => setCopiedField(null), 2000);
+    toast.success("Copied!");
+  };
+
+  const filtered = restaurants.filter(r =>
     r.name.toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) {
-
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{height:"100vh"}}>
-        <div className="spinner-border text-primary"/>
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" />
       </div>
     );
-
   }
 
   return (
-
-    <div className="container-fluid p-4" style={{background:"#f8fafc", minHeight:"100vh"}}>
-
+    <div style={{ background: "#f1f5f9", minHeight: "100vh" }}>
+      
       {/* HEADER */}
-
-      <div className="d-flex justify-content-between align-items-center mb-4">
-
+      <div className="d-flex justify-content-between align-items-center p-4">
         <div>
-          <h3 className="fw-bold">Restaurants</h3>
-          <p className="text-muted mb-0">
-            Manage all restaurants on your platform
-          </p>
+          <h2 className="fw-bold mb-1">🍽 Restaurants</h2>
+          <small className="text-muted">
+            Manage your platform restaurants easily
+          </small>
         </div>
 
         <button
-          className="btn btn-light shadow-sm"
+          className="btn btn-dark"
           onClick={() => navigate("/superadmin/dashboard")}
         >
-          <FaArrowLeft className="me-2"/>
+          <FaArrowLeft className="me-2" />
           Back
         </button>
-
       </div>
-
 
       {/* STATS */}
-
-      <div className="row mb-4">
-
-        <div className="col-md-4">
-          <div className="card border-0 shadow-sm p-3">
-            <h6 className="text-muted">Total Restaurants</h6>
-            <h3 className="fw-bold">{restaurants.length}</h3>
-          </div>
+      <div className="container mb-4">
+        <div className="row g-3">
+          {[
+            { title: "Total", value: restaurants.length },
+            {
+              title: "Active",
+              value: restaurants.filter(r => r.status === "ACTIVE").length
+            },
+            {
+              title: "Inactive",
+              value: restaurants.filter(r => r.status !== "ACTIVE").length
+            }
+          ].map((item, i) => (
+            <div key={i} className="col-md-4">
+              <div className="card shadow-sm border-0 p-3 text-center">
+                <h6 className="text-muted">{item.title}</h6>
+                <h3 className="fw-bold">{item.value}</h3>
+              </div>
+            </div>
+          ))}
         </div>
-
-        <div className="col-md-4">
-          <div className="card border-0 shadow-sm p-3">
-            <h6 className="text-muted">Active</h6>
-            <h3 className="fw-bold">
-              {restaurants.filter(r => r.status === "ACTIVE").length}
-            </h3>
-          </div>
-        </div>
-
-        <div className="col-md-4">
-          <div className="card border-0 shadow-sm p-3">
-            <h6 className="text-muted">Inactive</h6>
-            <h3 className="fw-bold">
-              {restaurants.filter(r => r.status !== "ACTIVE").length}
-            </h3>
-          </div>
-        </div>
-
       </div>
 
-
       {/* SEARCH */}
-
-      <div className="card border-0 shadow-sm mb-4 p-3">
-
-        <div className="input-group">
-
-          <span className="input-group-text">
-            <FaSearch/>
+      <div className="container mb-4">
+        <div className="input-group shadow-sm">
+          <span className="input-group-text bg-white">
+            <FaSearch />
           </span>
-
           <input
             type="text"
             className="form-control"
-            placeholder="Search restaurant..."
+            placeholder="Search restaurants..."
             value={search}
-            onChange={(e)=>setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
           />
-
         </div>
-
       </div>
 
+      {/* CARDS UI */}
+      <div className="container">
+        <div className="row g-4">
+          {filtered.map(r => (
+            <div key={r._id} className="col-md-6 col-lg-4">
+              <div className="card shadow-sm border-0 h-100 p-3">
 
-      {/* TABLE */}
+                {/* TOP */}
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-primary text-white p-3 rounded me-3">
+                    <FaBuilding />
+                  </div>
+                  <div>
+                    <h5 className="mb-0">{r.name}</h5>
+                    <small className="text-muted">{r.email}</small>
+                  </div>
+                </div>
 
-      <div className="card border-0 shadow-sm">
+                {/* STATUS */}
+                <span
+                  className={`badge mb-3 ${
+                    r.status === "ACTIVE"
+                      ? "bg-success"
+                      : "bg-danger"
+                  }`}
+                >
+                  {r.status}
+                </span>
 
-        <div className="table-responsive">
-
-          <table className="table table-hover align-middle mb-0">
-
-            <thead className="table-light">
-
-              <tr>
-                <th>Restaurant</th>
-                <th>Site Code</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {filteredRestaurants.map((restaurant) => (
-
-                <tr key={restaurant._id}>
-
-                  <td>
-
-                    <div className="d-flex align-items-center gap-3">
-
-                      <div
-                        style={{
-                          width:"40px",
-                          height:"40px",
-                          borderRadius:"10px",
-                          background:"#6366f1",
-                          color:"white",
-                          display:"flex",
-                          alignItems:"center",
-                          justifyContent:"center"
-                        }}
-                      >
-                        <FaBuilding/>
-                      </div>
-
-                      <strong>{restaurant.name}</strong>
-
-                    </div>
-
-                  </td>
-
-                  <td>
-                    <span className="badge bg-primary">
-                      {restaurant.siteCode}
-                    </span>
-                  </td>
-
-                  <td>{restaurant.email}</td>
-
-                  <td>
-
-                    <span
-                      className={`badge ${
-                        restaurant.status === "ACTIVE"
-                          ? "bg-success"
-                          : "bg-danger"
-                      }`}
+                {/* LINKS */}
+                <div className="mb-2">
+                  <small>Customer Link</small>
+                  <div className="input-group input-group-sm">
+                    <input
+                      className="form-control"
+                      value={`https://restaurant-manage-mdzr.vercel.app?siteCode=${r.siteCode}`}
+                      readOnly
+                    />
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={() =>
+                        copyToClipboard(
+                          `https://restaurant-manage-mdzr.vercel.app?siteCode=${r.siteCode}`,
+                          r.siteCode + "c"
+                        )
+                      }
                     >
-                      {restaurant.status}
-                    </span>
+                      {copiedField === r.siteCode + "c" ? <FaCheck /> : <FaCopy />}
+                    </button>
+                  </div>
+                </div>
 
-                  </td>
+                <div className="mb-3">
+                  <small>Admin Link</small>
+                  <div className="input-group input-group-sm">
+                    <input
+                      className="form-control"
+                      value={`https://restaurant-manage-mdzr.vercel.app/admin?siteCode=${r.siteCode}`}
+                      readOnly
+                    />
+                    <button
+                      className="btn btn-outline-success"
+                      onClick={() =>
+                        copyToClipboard(
+                          `https://restaurant-manage-mdzr.vercel.app/admin?siteCode=${r.siteCode}`,
+                          r.siteCode + "a"
+                        )
+                      }
+                    >
+                      {copiedField === r.siteCode + "a" ? <FaCheck /> : <FaCopy />}
+                    </button>
+                  </div>
+                </div>
 
-                  <td>
+                {/* ACTION */}
+                <button
+                  className={`btn ${
+                    r.status === "ACTIVE"
+                      ? "btn-outline-danger"
+                      : "btn-outline-success"
+                  }`}
+                  onClick={() =>
+                    toggleRestaurantStatus(r.siteCode, r.status)
+                  }
+                >
+                  {r.status === "ACTIVE" ? (
+                    <>
+                      <FaBan className="me-1" /> Deactivate
+                    </>
+                  ) : (
+                    <>
+                      <FaPowerOff className="me-1" /> Activate
+                    </>
+                  )}
+                </button>
 
-                    <div className="d-flex flex-column gap-2">
-
-                      {/* Customer Link - For Ordering Food */}
-                      <div className="d-flex align-items-center gap-1">
-                        <small className="text-muted" style={{width: "80px"}}>Customer:</small>
-                        <div className="input-group input-group-sm" style={{maxWidth: "200px"}}>
-                          <input
-                            type="text"
-                            className="form-control form-control-sm"
-                            value={`https://restaurant-manage-mdzr.vercel.app?siteCode=${restaurant.siteCode}`}
-                            readOnly
-                            style={{fontSize: "0.75rem"}}
-                          />
-                          <button
-                            className="btn btn-outline-primary btn-sm"
-                            onClick={() => copyToClipboard(
-                              `https://restaurant-manage-mdzr.vercel.app?siteCode=${restaurant.siteCode}`,
-                              `customer-${restaurant.siteCode}`
-                            )}
-                            title="Copy Customer Link"
-                          >
-                            {copiedField === `customer-${restaurant.siteCode}` ? <FaCheck /> : <FaCopy />}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Admin Login Link */}
-                      <div className="d-flex align-items-center gap-1">
-                        <small className="text-muted" style={{width: "80px"}}>Admin:</small>
-                        <div className="input-group input-group-sm" style={{maxWidth: "200px"}}>
-                          <input
-                            type="text"
-                            className="form-control form-control-sm"
-                            value={`https://restaurant-manage-mdzr.vercel.app/admin?siteCode=${restaurant.siteCode}`}
-                            readOnly
-                            style={{fontSize: "0.75rem"}}
-                          />
-                          <button
-                            className="btn btn-outline-success btn-sm"
-                            onClick={() => copyToClipboard(
-                              `https://restaurant-manage-mdzr.vercel.app/admin?siteCode=${restaurant.siteCode}`,
-                              `admin-${restaurant.siteCode}`
-                            )}
-                            title="Copy Admin Login Link"
-                          >
-                            {copiedField === `admin-${restaurant.siteCode}` ? <FaCheck /> : <FaCopy />}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Deactivate/Activate Button */}
-                      {restaurant.status === "ACTIVE" ? (
-                        <button
-                          className="btn btn-sm btn-outline-danger mt-1"
-                          onClick={() => {
-                            if (window.confirm(`Are you sure you want to deactivate "${restaurant.name}"?`)) {
-                              toggleRestaurantStatus(restaurant.siteCode, restaurant.status);
-                            }
-                          }}
-                          title="Deactivate Restaurant"
-                        >
-                          <FaBan className="me-1"/> Deactivate
-                        </button>
-                      ) : (
-                        <button
-                          className="btn btn-sm btn-outline-success mt-1"
-                          onClick={() => {
-                            toggleRestaurantStatus(restaurant.siteCode, restaurant.status);
-                          }}
-                          title="Activate Restaurant"
-                        >
-                          <FaPowerOff className="me-1"/> Activate
-                        </button>
-                      )}
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
+              </div>
+            </div>
+          ))}
         </div>
-
       </div>
-
     </div>
-
   );
-
 };
 
 export default ViewRestaurants;

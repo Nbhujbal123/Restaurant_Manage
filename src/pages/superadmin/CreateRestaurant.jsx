@@ -13,7 +13,6 @@ import {
 import { API_BASE_URL } from "../../config/api";
 
 const CreateRestaurant = () => {
-
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -26,43 +25,23 @@ const CreateRestaurant = () => {
   });
 
   const handleChange = (e) => {
-
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     const token = localStorage.getItem("token");
-    
-    if (!token) {
-      alert("Please login first");
-      navigate("/superadmin/login");
-      return;
-    }
+    if (!token) return navigate("/superadmin/login");
 
     try {
-
       setLoading(true);
 
-      console.log("Creating restaurant with data:", {
-        restaurantName: formData.restaurantName,
-        restaurantEmail: formData.email,
-        restaurantPhone: formData.phone,
-        adminName: formData.ownerName,
-        adminEmail: formData.email
-      });
-
-      const apiUrl = `${API_BASE_URL}/superadmin/create-restaurant`;
-      console.log("API URL:", apiUrl);
-
-      const res = await axios.post(
-        apiUrl,
+      await axios.post(
+        `${API_BASE_URL}/superadmin/create-restaurant`,
         {
           restaurantName: formData.restaurantName,
           restaurantEmail: formData.email,
@@ -73,244 +52,144 @@ const CreateRestaurant = () => {
           adminPassword: "admin123"
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          timeout: 15000
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
 
-      console.log("Create restaurant response:", res.data);
-
-      // Check if restaurant was created
-      if (!res.data.restaurant) {
-        throw new Error("Invalid response: No restaurant data received");
-      }
-
-      // Navigate to manage restaurants page to view the created restaurant
       navigate("/superadmin/restaurants");
 
     } catch (error) {
-
-      console.error("Create restaurant error:", error);
-      console.error("Error response:", error.response);
-      console.error("Error request:", error.request);
-      
-      let errorMessage = "Failed to create restaurant";
-      
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // Server responded with error
-          console.log("Status:", error.response.status);
-          console.log("Data:", error.response.data);
-          errorMessage = error.response?.data?.message || 
-                        error.response?.data?.error || 
-                        `Server error: ${error.response.status}`;
-        } else if (error.request) {
-          // Request made but no response
-          errorMessage = "Cannot connect to server. Please check your internet connection.";
-        } else {
-          errorMessage = "Error setting up request. Please try again.";
-        }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
-      alert(errorMessage);
-
+      alert("Failed to create restaurant");
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   return (
-
-    <div className="container-fluid p-4" style={{background:"#f8fafc",minHeight:"100vh"}}>
+    <div style={{ background: "#f1f5f9", minHeight: "100vh" }}>
 
       {/* HEADER */}
-
-      <div className="d-flex justify-content-between align-items-center mb-4">
-
+      <div className="d-flex justify-content-between align-items-center p-4">
         <div>
-          <h3 className="fw-bold">Create Restaurant</h3>
-          <p className="text-muted mb-0">
-            Add a new restaurant to your platform
-          </p>
+          <h2 className="fw-bold mb-1">➕ Create Restaurant</h2>
+          <small className="text-muted">
+            Add a new restaurant to your system
+          </small>
         </div>
 
         <button
-          className="btn btn-light shadow-sm"
+          className="btn btn-dark"
           onClick={() => navigate("/superadmin/dashboard")}
         >
-          <FaArrowLeft className="me-2"/>
+          <FaArrowLeft className="me-2" />
           Back
         </button>
-
       </div>
 
-
-      {/* FORM CARD */}
-
-      <div className="card border-0 shadow-sm">
-
-        <div className="card-body p-4">
-
+      {/* FORM */}
+      <div className="container d-flex justify-content-center">
+        <div
+          className="card border-0 shadow-lg p-4"
+          style={{ maxWidth: "600px", width: "100%", borderRadius: "16px" }}
+        >
           <form onSubmit={handleSubmit}>
 
-            <div className="row g-4">
-
-              {/* Restaurant Name */}
-
-              <div className="col-md-6">
-
-                <label className="form-label fw-semibold">
-                  Restaurant Name
-                </label>
-
-                <div className="input-group">
-
-                  <span className="input-group-text">
-                    <FaStore/>
-                  </span>
-
-                  <input
-                    type="text"
-                    name="restaurantName"
-                    className="form-control"
-                    placeholder="Enter restaurant name"
-                    value={formData.restaurantName}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
+            {/* Restaurant Name */}
+            <div className="mb-3">
+              <label className="fw-semibold mb-1">Restaurant Name</label>
+              <div className="input-group">
+                <span className="input-group-text bg-white">
+                  <FaStore />
+                </span>
+                <input
+                  type="text"
+                  name="restaurantName"
+                  className="form-control"
+                  placeholder="Enter restaurant name"
+                  value={formData.restaurantName}
+                  onChange={handleChange}
+                  required
+                />
               </div>
-
-
-              {/* Owner Name */}
-
-              <div className="col-md-6">
-
-                <label className="form-label fw-semibold">
-                  Owner Name
-                </label>
-
-                <div className="input-group">
-
-                  <span className="input-group-text">
-                    <FaUser/>
-                  </span>
-
-                  <input
-                    type="text"
-                    name="ownerName"
-                    className="form-control"
-                    placeholder="Owner name"
-                    value={formData.ownerName}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* Email */}
-
-              <div className="col-md-6">
-
-                <label className="form-label fw-semibold">
-                  Email
-                </label>
-
-                <div className="input-group">
-
-                  <span className="input-group-text">
-                    <FaEnvelope/>
-                  </span>
-
-                  <input
-                    type="email"
-                    name="email"
-                    className="form-control"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* Phone */}
-
-              <div className="col-md-6">
-
-                <label className="form-label fw-semibold">
-                  Phone
-                </label>
-
-                <div className="input-group">
-
-                  <span className="input-group-text">
-                    <FaPhone/>
-                  </span>
-
-                  <input
-                    type="tel"
-                    name="phone"
-                    className="form-control"
-                    placeholder="Phone number"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
-              </div>
-
             </div>
 
-
-            {/* SUBMIT BUTTON */}
-
-            <div className="mt-4">
-
-              <button
-                type="submit"
-                className="btn btn-primary w-100"
-                disabled={loading}
-              >
-
-                {loading ? "Creating Restaurant..." : (
-                  <>
-                    <FaPlus className="me-2"/>
-                    Create Restaurant
-                  </>
-                )}
-
-              </button>
-
+            {/* Owner Name */}
+            <div className="mb-3">
+              <label className="fw-semibold mb-1">Owner Name</label>
+              <div className="input-group">
+                <span className="input-group-text bg-white">
+                  <FaUser />
+                </span>
+                <input
+                  type="text"
+                  name="ownerName"
+                  className="form-control"
+                  placeholder="Enter owner name"
+                  value={formData.ownerName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
+
+            {/* Email */}
+            <div className="mb-3">
+              <label className="fw-semibold mb-1">Email</label>
+              <div className="input-group">
+                <span className="input-group-text bg-white">
+                  <FaEnvelope />
+                </span>
+                <input
+                  type="email"
+                  name="email"
+                  className="form-control"
+                  placeholder="Enter email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div className="mb-4">
+              <label className="fw-semibold mb-1">Phone</label>
+              <div className="input-group">
+                <span className="input-group-text bg-white">
+                  <FaPhone />
+                </span>
+                <input
+                  type="tel"
+                  name="phone"
+                  className="form-control"
+                  placeholder="Enter phone number"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* BUTTON */}
+            <button
+              type="submit"
+              className="btn btn-primary w-100 py-2 fw-semibold"
+              disabled={loading}
+              style={{ borderRadius: "10px" }}
+            >
+              {loading ? "Creating..." : (
+                <>
+                  <FaPlus className="me-2" />
+                  Create Restaurant
+                </>
+              )}
+            </button>
 
           </form>
-
         </div>
-
       </div>
-
     </div>
-
   );
-
 };
 
 export default CreateRestaurant;
