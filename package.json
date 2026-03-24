@@ -22,6 +22,9 @@
   "@types/react-dom": "^19.2.2",
   
     
+  "@vitejs/plugin-react": "^5.2.0",
+  
+    
   "baseline-browser-mapping": "^1.0.0",
   
     
