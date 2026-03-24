@@ -8,7 +8,9 @@ import {
   FaPhone,
   FaArrowLeft,
   FaPlus,
-  FaExternalLinkAlt
+  FaExternalLinkAlt,
+  FaCopy,
+  FaCheck           
 } from "react-icons/fa";
 
 import { API_BASE_URL, FRONTEND_URL } from "../../config/api";
@@ -18,6 +20,8 @@ const CreateRestaurant = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [createdRestaurant, setCreatedRestaurant] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
 
   const [formData, setFormData] = useState({
     restaurantName: "",
@@ -33,6 +37,25 @@ const CreateRestaurant = () => {
       [e.target.name]: e.target.value
     });
 
+  };
+
+  const copyToClipboard = async (text, fieldName) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -101,23 +124,14 @@ const CreateRestaurant = () => {
       // Admin login URL
       const adminLoginUrl = `${baseUrl}/admin?siteCode=${siteCode}`;
       
-      // Show success message with links (don't open automatically)
-      alert(
-        `✅ Restaurant Created Successfully!
-
-Site Code: ${siteCode}
-
-📋 Links:
-• Customer Link: ${restaurantLink}
-• Admin Login: ${adminLoginUrl}
-
-🔐 Default Admin Password: admin123
-
-💡 Tip: Copy these links and share with the restaurant admin.`
-      );
-
-      // Navigate to manage restaurants page instead of dashboard
-      navigate("/superadmin/restaurants");
+      // Store the created restaurant data for display
+      setCreatedRestaurant({
+        siteCode,
+        restaurantLink,
+        adminLoginUrl,
+        restaurantName: formData.restaurantName,
+        adminPassword: "admin123"
+      });
 
     } catch (error) {
 
@@ -179,6 +193,137 @@ Site Code: ${siteCode}
         </button>
 
       </div>
+
+
+      {/* SUCCESS MESSAGE WITH LINKS */}
+      {createdRestaurant && (
+        <div className="card border-0 shadow-sm mb-4" style={{borderLeft: "4px solid #28a745"}}>
+          <div className="card-body p-4">
+            <div className="d-flex align-items-center mb-3">
+              <div className="bg-success text-white rounded-circle p-2 me-3">
+                <FaCheck />
+              </div>
+              <div>
+                <h5 className="mb-0 fw-bold">Restaurant Created Successfully!</h5>
+                <small className="text-muted">Site Code: {createdRestaurant.siteCode}</small>
+              </div>
+            </div>
+
+            <div className="row g-3">
+              {/* Customer Link - For Ordering Food */}
+              <div className="col-md-6">
+                <div className="card h-100" style={{background: "#f0f9ff"}}>
+                  <div className="card-body">
+                    <h6 className="card-title fw-bold text-primary">
+                      <FaExternalLinkAlt className="me-2" />
+                      Customer Link (Order Food)
+                    </h6>
+                    <p className="card-text small text-muted mb-2">
+                      Share this link with customers to browse menu and place orders
+                    </p>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        value={createdRestaurant.restaurantLink}
+                        readOnly
+                        style={{fontSize: "0.85rem"}}
+                      />
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => copyToClipboard(createdRestaurant.restaurantLink, 'customer')}
+                        title="Copy link"
+                      >
+                        {copiedField === 'customer' ? <FaCheck /> : <FaCopy />}
+                      </button>
+                    </div>
+                    <a
+                      href={createdRestaurant.restaurantLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary btn-sm mt-2 w-100"
+                    >
+                      Open Customer Page
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Login Link */}
+              <div className="col-md-6">
+                <div className="card h-100" style={{background: "#f0fdf4"}}>
+                  <div className="card-body">
+                    <h6 className="card-title fw-bold text-success">
+                      <FaUser className="me-2" />
+                      Admin Login Link
+                    </h6>
+                    <p className="card-text small text-muted mb-2">
+                      Share this link with restaurant admin to manage the restaurant
+                    </p>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        value={createdRestaurant.adminLoginUrl}
+                        readOnly
+                        style={{fontSize: "0.85rem"}}
+                      />
+                      <button
+                        className="btn btn-outline-success btn-sm"
+                        onClick={() => copyToClipboard(createdRestaurant.adminLoginUrl, 'admin')}
+                        title="Copy link"
+                      >
+                        {copiedField === 'admin' ? <FaCheck /> : <FaCopy />}
+                      </button>
+                    </div>
+                    <a
+                      href={createdRestaurant.adminLoginUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-success btn-sm mt-2 w-100"
+                    >
+                      Open Admin Login
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Credentials */}
+            <div className="alert alert-info mt-3 mb-0">
+              <strong>🔐 Default Admin Credentials:</strong>
+              <br />
+              <small>
+                Email: <code>{formData.email}</code> | Password: <code>{createdRestaurant.adminPassword}</code>
+              </small>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-3 d-flex gap-2">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => {
+                  setCreatedRestaurant(null);
+                  setFormData({
+                    restaurantName: "",
+                    ownerName: "",
+                    email: "",
+                    phone: ""
+                  });
+                }}
+              >
+                Create Another Restaurant
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate("/superadmin/restaurants")}
+              >
+                View All Restaurants
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* FORM CARD */}
