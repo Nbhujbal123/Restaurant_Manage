@@ -328,7 +328,7 @@ const ViewRestaurants = () => {
                           const baseUrl = FRONTEND_URL && FRONTEND_URL !== 'https://your-frontend.vercel.app'
                             ? FRONTEND_URL
                             : window.location.origin;
-                          const link = `${baseUrl}?siteCode=${restaurant.siteCode}`;
+                          const link = `${API_BASE_URL}?siteCode=${restaurant.siteCode}`;
                           navigator.clipboard.writeText(link);
                           toast.success("Customer Link copied to clipboard!")
                         }}
