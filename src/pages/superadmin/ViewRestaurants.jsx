@@ -324,7 +324,9 @@ const ViewRestaurants = () => {
                       <button
                         className="btn btn-sm btn-outline-primary"
                         onClick={() => {
-                          const link = `${API_BASE_URL}?siteCode=${restaurant.siteCode}`;
+                          // Remove /api suffix from API_BASE_URL for user-facing links
+                          const baseUrl = API_BASE_URL.replace('/api', '');
+                          const link = `${baseUrl}?siteCode=${restaurant.siteCode}`;
                           navigator.clipboard.writeText(link);
                           toast.success("Customer Link copied to clipboard!")
                         }}
@@ -337,7 +339,9 @@ const ViewRestaurants = () => {
                       {/* <button
                         className="btn btn-sm btn-outline-success"
                         onClick={() => {
-                          const link = `${API_BASE_URL}/admin?siteCode=${restaurant.siteCode}`;
+                          // Remove /api suffix from API_BASE_URL for user-facing links
+                          const baseUrl = API_BASE_URL.replace('/api', '');
+                          const link = `${baseUrl}/admin?siteCode=${restaurant.siteCode}`;
                           navigator.clipboard.writeText(link);
                           alert(`Admin Login Link copied: ${link}`);
                         }}

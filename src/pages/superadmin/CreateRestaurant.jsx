@@ -90,11 +90,12 @@ const CreateRestaurant = () => {
 
       const siteCode = res.data.restaurant.siteCode;
 
-      // Generate the customer-facing link with siteCode using API_BASE_URL
-      const restaurantLink = `${API_BASE_URL}?siteCode=${siteCode}`;
+      // Generate the customer-facing link with siteCode using API_BASE_URL (remove /api suffix)
+      const baseUrl = API_BASE_URL.replace('/api', '');
+      const restaurantLink = `${baseUrl}?siteCode=${siteCode}`;
       
       // Admin login URL
-      const adminLoginUrl = `${API_BASE_URL}/admin?siteCode=${siteCode}`;
+      const adminLoginUrl = `${baseUrl}/admin?siteCode=${siteCode}`;
       
       // Show success message with links (don't open automatically)
       alert(
