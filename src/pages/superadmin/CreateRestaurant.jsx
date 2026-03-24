@@ -90,8 +90,12 @@ const CreateRestaurant = () => {
 
       const siteCode = res.data.restaurant.siteCode;
 
-      // Generate the customer-facing link with siteCode using API_BASE_URL (remove /api suffix)
-      const baseUrl = API_BASE_URL.replace('/api', '');
+      // Generate the customer-facing link with siteCode using FRONTEND_URL
+      // Use window.location.origin as fallback if FRONTEND_URL is not set
+      const baseUrl = FRONTEND_URL && FRONTEND_URL !== 'https://your-frontend.vercel.app'
+        ? FRONTEND_URL
+        : window.location.origin;
+      
       const restaurantLink = `${baseUrl}?siteCode=${siteCode}`;
       
       // Admin login URL

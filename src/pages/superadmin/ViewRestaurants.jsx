@@ -324,8 +324,11 @@ const ViewRestaurants = () => {
                       <button
                         className="btn btn-sm btn-outline-primary"
                         onClick={() => {
-                          // Remove /api suffix from API_BASE_URL for user-facing links
-                          const baseUrl = API_BASE_URL.replace('/api', '');
+                          // Use FRONTEND_URL for user-facing links
+                          // Use window.location.origin as fallback if FRONTEND_URL is not set
+                          const baseUrl = FRONTEND_URL && FRONTEND_URL !== 'https://your-frontend.vercel.app'
+                            ? FRONTEND_URL
+                            : window.location.origin;
                           const link = `${baseUrl}?siteCode=${restaurant.siteCode}`;
                           navigator.clipboard.writeText(link);
                           toast.success("Customer Link copied to clipboard!")
@@ -339,8 +342,11 @@ const ViewRestaurants = () => {
                       {/* <button
                         className="btn btn-sm btn-outline-success"
                         onClick={() => {
-                          // Remove /api suffix from API_BASE_URL for user-facing links
-                          const baseUrl = API_BASE_URL.replace('/api', '');
+                          // Use FRONTEND_URL for user-facing links
+                          // Use window.location.origin as fallback if FRONTEND_URL is not set
+                          const baseUrl = FRONTEND_URL && FRONTEND_URL !== 'https://your-frontend.vercel.app'
+                            ? FRONTEND_URL
+                            : window.location.origin;
                           const link = `${baseUrl}/admin?siteCode=${restaurant.siteCode}`;
                           navigator.clipboard.writeText(link);
                           alert(`Admin Login Link copied: ${link}`);
