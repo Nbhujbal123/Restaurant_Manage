@@ -7,7 +7,9 @@ import {
   FaPowerOff,
   FaSearch,
   FaArrowLeft,
-  FaBan
+  FaBan,
+  FaExternalLinkAlt,
+  FaCheck
 } from "react-icons/fa";
 import { toast } from "../../components/Toast";
 
@@ -20,6 +22,7 @@ const ViewRestaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [copiedField, setCopiedField] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -146,6 +149,27 @@ const ViewRestaurants = () => {
       toast.error(errorMessage)
     }
 
+  };
+
+  const copyToClipboard = async (text, fieldName) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+      toast.success("Link copied to clipboard!");
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+      toast.success("Link copied to clipboard!");
+    }
   };
 
   const filteredRestaurants = restaurants.filter((r) =>
@@ -318,48 +342,60 @@ const ViewRestaurants = () => {
 
                   <td>
 
-                    <div className="d-flex gap-2">
+                    <div className="d-flex flex-column gap-2">
 
-                      {/* Customer Link Button */}
-                      <button
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => {
-                          // Use FRONTEND_URL for user-facing links
-                          // Use window.location.origin as fallback if FRONTEND_URL is not set
-                          const baseUrl = FRONTEND_URL && FRONTEND_URL !== 'https://your-frontend.vercel.app'
-                            ? FRONTEND_URL
-                            : window.location.origin;
-                          const link = `${baseUrl}?siteCode=${restaurant.siteCode}`;
-                          navigator.clipboard.writeText(link);
-                          toast.success("Customer Link copied to clipboard!")
-                        }}
-                        title="Copy Customer Link"
-                      >
-                        <FaCopy/>
-                      </button>
+                      {/* Customer Link - For Ordering Food */}
+                      <div className="d-flex align-items-center gap-1">
+                        <small className="text-muted" style={{width: "80px"}}>Customer:</small>
+                        <div className="input-group input-group-sm" style={{maxWidth: "200px"}}>
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={`${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}?siteCode=${restaurant.siteCode}`}
+                            readOnly
+                            style={{fontSize: "0.75rem"}}
+                          />
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => copyToClipboard(
+                              `${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}?siteCode=${restaurant.siteCode}`,
+                              `customer-${restaurant.siteCode}`
+                            )}
+                            title="Copy Customer Link"
+                          >
+                            {copiedField === `customer-${restaurant.siteCode}` ? <FaCheck /> : <FaCopy />}
+                          </button>
+                        </div>
+                      </div>
 
-                      {/* Admin Link Button */}
-                      {/* <button
-                        className="btn btn-sm btn-outline-success"
-                        onClick={() => {
-                          // Use FRONTEND_URL for user-facing links
-                          // Use window.location.origin as fallback if FRONTEND_URL is not set
-                          const baseUrl = FRONTEND_URL && FRONTEND_URL !== 'https://your-frontend.vercel.app'
-                            ? FRONTEND_URL
-                            : window.location.origin;
-                          const link = `${baseUrl}/admin?siteCode=${restaurant.siteCode}`;
-                          navigator.clipboard.writeText(link);
-                          alert(`Admin Login Link copied: ${link}`);
-                        }}
-                        title="Copy Admin Login Link"
-                      >
-                        <FaPowerOff/>
-                      </button> */}
+                      {/* Admin Login Link */}
+                      <div className="d-flex align-items-center gap-1">
+                        <small className="text-muted" style={{width: "80px"}}>Admin:</small>
+                        <div className="input-group input-group-sm" style={{maxWidth: "200px"}}>
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={`${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}/admin?siteCode=${restaurant.siteCode}`}
+                            readOnly
+                            style={{fontSize: "0.75rem"}}
+                          />
+                          <button
+                            className="btn btn-outline-success btn-sm"
+                            onClick={() => copyToClipboard(
+                              `${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}/admin?siteCode=${restaurant.siteCode}`,
+                              `admin-${restaurant.siteCode}`
+                            )}
+                            title="Copy Admin Login Link"
+                          >
+                            {copiedField === `admin-${restaurant.siteCode}` ? <FaCheck /> : <FaCopy />}
+                          </button>
+                        </div>
+                      </div>
 
-                      {/* Deactivate Button */}
+                      {/* Deactivate/Activate Button */}
                       {restaurant.status === "ACTIVE" ? (
                         <button
-                          className="btn btn-sm btn-outline-danger"
+                          className="btn btn-sm btn-outline-danger mt-1"
                           onClick={() => {
                             if (window.confirm(`Are you sure you want to deactivate "${restaurant.name}"?`)) {
                               toggleRestaurantStatus(restaurant.siteCode, restaurant.status);
@@ -367,17 +403,17 @@ const ViewRestaurants = () => {
                           }}
                           title="Deactivate Restaurant"
                         >
-                          <FaBan/>
+                          <FaBan className="me-1"/> Deactivate
                         </button>
                       ) : (
                         <button
-                          className="btn btn-sm btn-outline-success"
+                          className="btn btn-sm btn-outline-success mt-1"
                           onClick={() => {
                             toggleRestaurantStatus(restaurant.siteCode, restaurant.status);
                           }}
                           title="Activate Restaurant"
                         >
-                          <FaPowerOff/>
+                          <FaPowerOff className="me-1"/> Activate
                         </button>
                       )}
 
