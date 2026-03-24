@@ -96,7 +96,7 @@ const CreateRestaurant = () => {
         ? FRONTEND_URL
         : window.location.origin;
       
-      const restaurantLink = `${API_BASE_URLl}?siteCode=${siteCode}`;
+      const restaurantLink = `${API_BASE_URL}?siteCode=${siteCode}`;
       
       // Admin login URL
       const adminLoginUrl = `${API_BASE_URL}/admin?siteCode=${siteCode}`;
