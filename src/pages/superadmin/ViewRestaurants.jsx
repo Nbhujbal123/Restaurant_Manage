@@ -351,14 +351,14 @@ const ViewRestaurants = () => {
                           <input
                             type="text"
                             className="form-control form-control-sm"
-                            value={`${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}?siteCode=${restaurant.siteCode}`}
+                            value={`https://restaurant-manage-mdzr.vercel.app?siteCode=${restaurant.siteCode}`}
                             readOnly
                             style={{fontSize: "0.75rem"}}
                           />
                           <button
                             className="btn btn-outline-primary btn-sm"
                             onClick={() => copyToClipboard(
-                              `${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}?siteCode=${restaurant.siteCode}`,
+                              `https://restaurant-manage-mdzr.vercel.app?siteCode=${restaurant.siteCode}`,
                               `customer-${restaurant.siteCode}`
                             )}
                             title="Copy Customer Link"
@@ -375,14 +375,14 @@ const ViewRestaurants = () => {
                           <input
                             type="text"
                             className="form-control form-control-sm"
-                            value={`${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}/admin?siteCode=${restaurant.siteCode}`}
+                            value={`https://restaurant-manage-mdzr.vercel.app/admin?siteCode=${restaurant.siteCode}`}
                             readOnly
                             style={{fontSize: "0.75rem"}}
                           />
                           <button
                             className="btn btn-outline-success btn-sm"
                             onClick={() => copyToClipboard(
-                              `${FRONTEND_URL || 'https://restaurant-manage-mdzr.vercel.app'}/admin?siteCode=${restaurant.siteCode}`,
+                              `https://restaurant-manage-mdzr.vercel.app/admin?siteCode=${restaurant.siteCode}`,
                               `admin-${restaurant.siteCode}`
                             )}
                             title="Copy Admin Login Link"
