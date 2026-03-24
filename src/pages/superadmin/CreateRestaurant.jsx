@@ -96,10 +96,10 @@ const CreateRestaurant = () => {
         ? FRONTEND_URL
         : window.location.origin;
       
-      const restaurantLink = `${baseUrl}?siteCode=${siteCode}`;
+      const restaurantLink = `${API_BASE_URLl}?siteCode=${siteCode}`;
       
       // Admin login URL
-      const adminLoginUrl = `${baseUrl}/admin?siteCode=${siteCode}`;
+      const adminLoginUrl = `${API_BASE_URL}/admin?siteCode=${siteCode}`;
       
       // Show success message with links (don't open automatically)
       alert(
